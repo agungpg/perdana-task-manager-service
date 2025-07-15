@@ -22,6 +22,11 @@ func JWTMiddleware() fiber.Handler {
 			return c.Status(401).JSON(fiber.Map{"error": "invalid token"})
 		}
 
+		// Store claims in context
+		if claims, ok := token.Claims.(jwt.MapClaims); ok {
+			c.Locals("userClaims", claims)
+		}
+
 		// You can add `c.Locals("user_id", userId)` if needed
 		return c.Next()
 	}

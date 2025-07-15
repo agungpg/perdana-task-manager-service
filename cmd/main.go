@@ -5,6 +5,7 @@ import (
 
 	"github.com/agungpg/perdana-task-manager/config"
 	"github.com/agungpg/perdana-task-manager/internal/auth"
+	"github.com/agungpg/perdana-task-manager/internal/project"
 	"github.com/agungpg/perdana-task-manager/pkg/database"
 	"github.com/gofiber/fiber/v2"
 )
@@ -21,12 +22,15 @@ func main() {
 	authHandler := auth.NewHandler(authService)
 	authHandler.RegisterRoutes(app)
 
-	// taskRepo := task.NewRepository(database.DB)
-	// taskService := task.NewService(taskRepo)
-	// taskHandler := task.NewHandler(taskService)
-	// taskHandler.RegisterRoutes(app)
+	api := app.Group("/api") // No middleware here
 
-	// api := app.Group("/api", auth.JWTMiddleware())
+	projectRepo := project.NewRepository(database.DB)
+	projectService := project.NewService(projectRepo)
+	projectHandler := project.NewHandler(projectService)
+
+	// Apply JWTMiddleware only to /project routes
+	projectGroup := api.Group("/project", auth.JWTMiddleware())
+	projectHandler.RegisterRoutes(projectGroup)
 
 	port := os.Getenv("PORT")
 	app.Listen(":" + port)
