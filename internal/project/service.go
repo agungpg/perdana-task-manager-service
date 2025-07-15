@@ -39,10 +39,10 @@ func (s *Service) GetProjectByID(ctx context.Context, id string) (*Project, erro
 	return project, nil
 }
 
-func (s *Service) GetProjectList(ctx context.Context, page, pageSize int, name string) ([]*Project, error) {
-	projects, err := s.repo.GetProjectList(ctx, page, pageSize, name)
+func (s *Service) GetProjectList(ctx context.Context, page, pageSize int, name string) ([]*Project, int, error) {
+	projects, total, err := s.repo.GetProjectList(ctx, page, pageSize, name)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return projects, nil
+	return projects, total, nil
 }

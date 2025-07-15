@@ -63,11 +63,18 @@ func (h *Handler) GetProjectList(c *fiber.Ctx) error {
 		pageSize = 10
 	}
 
-	projects, err := h.service.GetProjectList(c.Context(), page, pageSize, name)
+	projects, total, err := h.service.GetProjectList(c.Context(), page, pageSize, name)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-	return c.JSON(projects)
+	return c.JSON(fiber.Map{
+		"data": projects,
+		"pagination": fiber.Map{
+			"page":       page,
+			"page_size":  pageSize,
+			"total_data": total,
+		},
+	})
 }
 
 func (h *Handler) GetProjectByID(c *fiber.Ctx) error {
