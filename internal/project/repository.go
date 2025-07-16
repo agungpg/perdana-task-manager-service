@@ -3,6 +3,7 @@ package project
 import (
 	"context"
 
+	"github.com/agungpg/perdana-task-manager/pkg/utils"
 	"github.com/uptrace/bun"
 )
 
@@ -14,8 +15,21 @@ func NewRepository(db *bun.DB) *Repository {
 	return &Repository{db}
 }
 
-func (r *Repository) CreateProject(ctx context.Context, project *Project) error {
-	_, err := r.db.NewInsert().Model(project).Exec(ctx)
+func (r *Repository) BeginTx(ctx context.Context) (*bun.Tx, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	return &tx, nil
+}
+
+func (r *Repository) CreateProject(ctx context.Context, project *Project, tx *bun.Tx) error {
+	runner := utils.GetQueryRunner(tx, r.db)
+	// if tx != nil {
+	// 	_, err := runner.NewInsert().Model(project).Exec(ctx)
+	// 	return err
+	// }
+	_, err := runner.NewInsert().Model(project).Exec(ctx)
 	return err
 }
 
@@ -40,4 +54,11 @@ func (r *Repository) GetProjectList(ctx context.Context, page, pageSize int, nam
 	query = query.Offset((page - 1) * pageSize).Limit(pageSize)
 	err = query.Scan(ctx)
 	return projects, total, err
+}
+
+func (r *Repository) AddProjectMember(ctx context.Context, member *ProjectMembers, tx *bun.Tx) error {
+	runner := utils.GetQueryRunner(tx, r.db)
+	_, err := runner.NewInsert().Model(member).Exec(ctx)
+
+	return err
 }

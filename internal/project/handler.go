@@ -16,19 +16,14 @@ func NewHandler(service *Service) *Handler {
 }
 
 func (h *Handler) RegisterRoutes(router fiber.Router) {
-	router.Post("/", h.CreateProduct)
+	router.Post("/", h.CreateProject)
 	router.Get("/", h.GetProjectList)
 	router.Get("/:id", h.GetProjectByID)
+	router.Post("/invite-member", h.InviteProjectMember)
 }
 
-type createProductInput struct {
-	Name        string `json:"name"`
-	Thumbnail   string `json:"thumbnail,omitempty"`
-	Description string `json:"description,omitempty"`
-}
-
-func (h *Handler) CreateProduct(c *fiber.Ctx) error {
-	var input createProductInput
+func (h *Handler) CreateProject(c *fiber.Ctx) error {
+	var input CreateProjectRequest
 	if err := c.BodyParser(&input); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Invalid input",
@@ -84,4 +79,23 @@ func (h *Handler) GetProjectByID(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Project not found"})
 	}
 	return c.JSON(project)
+}
+
+func (h *Handler) InviteProjectMember(c *fiber.Ctx) error {
+	var input InviteProjectMemberRequest
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid input",
+		})
+	}
+	err := h.service.InviteProjectMember(c.Context(), input.UserID, input.ProjectID, input.IsAdmin)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Opps something went wrong!",
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "User successfully invited!",
+	})
 }

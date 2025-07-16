@@ -6,6 +6,14 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type InvitationStatus string
+
+const (
+	InvitationPending  InvitationStatus = "pending"
+	InvitationAccepted InvitationStatus = "accepted"
+	InvitationRejected InvitationStatus = "rejected"
+)
+
 type Project struct {
 	bun.BaseModel `bun:"table:projects"`
 	ID            string    `bun:"id,pk,unique,notnull"`
@@ -16,4 +24,17 @@ type Project struct {
 	CreatedBy     string    `bun:"created_by"`
 	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 	UpdatedBy     string    `bun:"updated_by"`
+}
+
+type ProjectMembers struct {
+	bun.BaseModel    `bun:"table:project_members"`
+	ID               string           `bun:"id,pk,unique,notnull"`
+	ProjectID        string           `bun:"project_id,notnull"`
+	UserID           string           `bun:"user_id,notnull"`
+	CreatedAt        time.Time        `bun:"created_at,notnull,default:current_timestamp"`
+	CreatedBy        string           `bun:"created_by"`
+	UpdatedAt        time.Time        `bun:"updated_at,notnull,default:current_timestamp"`
+	UpdatedBy        string           `bun:"updated_by"`
+	IsAdmin          bool             `bun:"is_admin"`
+	InvitationStatus InvitationStatus `bun:"invitation_status" json:"invitation_status"`
 }
