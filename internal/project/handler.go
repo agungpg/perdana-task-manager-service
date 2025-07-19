@@ -88,10 +88,14 @@ func (h *Handler) InviteProjectMember(c *fiber.Ctx) error {
 			"message": "Invalid input",
 		})
 	}
-	err := h.service.InviteProjectMember(c.Context(), input.UserID, input.ProjectID, input.IsAdmin)
+
+	claims := c.Locals("userClaims").(jwt.MapClaims)
+	userID := claims["id"].(string)
+
+	err := h.service.InviteProjectMember(c.Context(), userID, input.UserID, input.ProjectID, input.IsAdmin)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Opps something went wrong!",
+			"message": err.Error(),
 		})
 	}
 

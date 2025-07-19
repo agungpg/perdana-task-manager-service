@@ -25,10 +25,7 @@ func (r *Repository) BeginTx(ctx context.Context) (*bun.Tx, error) {
 
 func (r *Repository) CreateProject(ctx context.Context, project *Project, tx *bun.Tx) error {
 	runner := utils.GetQueryRunner(tx, r.db)
-	// if tx != nil {
-	// 	_, err := runner.NewInsert().Model(project).Exec(ctx)
-	// 	return err
-	// }
+
 	_, err := runner.NewInsert().Model(project).Exec(ctx)
 	return err
 }
@@ -61,4 +58,22 @@ func (r *Repository) AddProjectMember(ctx context.Context, member *ProjectMember
 	_, err := runner.NewInsert().Model(member).Exec(ctx)
 
 	return err
+}
+
+func (r *Repository) GetProjectMember(ctx context.Context, projectId, userId string, tx *bun.Tx) ([]*ProjectMembers, error) {
+	runner := utils.GetQueryRunner(tx, r.db)
+	var members []*ProjectMembers
+
+	query := runner.NewSelect().
+		Model(&members).
+		Where("is_deleted = FALSE").
+		Where("project_id = ?", projectId)
+
+	if userId != "" {
+		query.Where("user_id = ?", userId)
+	}
+
+	err := query.Scan(ctx)
+
+	return members, err
 }

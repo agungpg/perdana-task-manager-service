@@ -2,6 +2,8 @@ package project
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -67,14 +69,48 @@ func (s *Service) GetProjectList(ctx context.Context, page, pageSize int, name s
 	return projects, total, nil
 }
 
-func (s *Service) InviteProjectMember(ctx context.Context, userId, projectId string, isAdmin bool) error {
+func (s *Service) InviteProjectMember(ctx context.Context, userId, memberId, projectId string, isAdmin bool) error {
+	members, err := s.repo.GetProjectMember(ctx, projectId, "", nil)
+	if err != nil || len(members) == 0 {
+		return errors.New("failed to invite project member: something went wrong")
+	}
+	if isAlreadyMember(memberId, members) {
+		return errors.New("failed to invite project member: user is already a member")
+	}
+
+	_, err = s.validateInviterIsAdmin(userId, members)
+	if err != nil {
+		return fmt.Errorf("failed to invite project member: %w", err)
+	}
+
 	projectMember := &ProjectMembers{
 		ID:               uuid.New().String(),
 		ProjectID:        projectId,
-		UserID:           userId,
+		UserID:           memberId,
 		IsAdmin:          isAdmin,
 		InvitationStatus: "pending",
 	}
 
 	return s.repo.AddProjectMember(ctx, projectMember, nil)
+}
+
+func (s *Service) validateInviterIsAdmin(userId string, members []*ProjectMembers) (*ProjectMembers, error) {
+	for _, member := range members {
+		if member.UserID == userId {
+			if member.IsAdmin {
+				return member, nil
+			}
+			return nil, errors.New("unauthorized access: inviter is not admin")
+		}
+	}
+	return nil, errors.New("unauthorized access: inviter not found")
+}
+
+func isAlreadyMember(memberId string, members []*ProjectMembers) bool {
+	for _, member := range members {
+		if member.UserID == memberId {
+			return true
+		}
+	}
+	return false
 }
