@@ -21,6 +21,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: stable
+          
+      # Download Go modules before running golangci-lint
+      - name: Download Go modules
+        run: go mod download
+
 
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v4

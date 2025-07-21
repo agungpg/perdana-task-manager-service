@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 )
 
 func JWTMiddleware() fiber.Handler {
