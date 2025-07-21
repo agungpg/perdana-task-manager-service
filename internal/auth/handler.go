@@ -14,10 +14,10 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
-func (h *Handler) RegisterRoutes(app *fiber.App) {
-	authGroup := app.Group("/auth")
-	authGroup.Post("/register", h.Register)
-	authGroup.Post("/login", h.Login)
+// Change parameter type to fiber.Router to match project handler pattern
+func (h *Handler) RegisterRoutes(router fiber.Router) {
+	router.Post("/register", h.Register)
+	router.Post("/login", h.Login)
 }
 
 type authInput struct {

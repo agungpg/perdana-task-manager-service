@@ -2,11 +2,9 @@ name: golangci-lint
 
 on:
   push:
-    branches:
-      - develop
+    branches: [develop]
   pull_request:
-    branches:
-      - develop
+    branches: [develop]
 
 permissions:
   contents: read
@@ -15,19 +13,40 @@ jobs:
   golangci:
     name: lint
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          go-version: stable
-          
-      # Download Go modules before running golangci-lint
-      - name: Download Go modules
-        run: go mod download
+          go-version: '1.24'
+          cache: true
 
+      - name: Cache Go modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Download and verify dependencies
+        run: |
+          go mod download
+          go mod verify
+          go mod tidy
+
+      - name: Build all packages
+        run: |
+          go build -v ./...
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v4
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.57.2 # atau ganti ke 'latest'
+          version: latest  # Use latest version that supports Go 1.24
+          args: --timeout=10m
+          skip-cache: true

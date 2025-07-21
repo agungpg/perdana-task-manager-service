@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/agungpg/perdana-task-manager/config"
@@ -20,7 +21,10 @@ func main() {
 	authRepo := auth.NewRepository(database.DB)
 	authService := auth.NewService(authRepo)
 	authHandler := auth.NewHandler(authService)
-	authHandler.RegisterRoutes(app)
+
+	// Create auth group and pass it to RegisterRoutes
+	authGroup := app.Group("/auth")
+	authHandler.RegisterRoutes(authGroup)
 
 	api := app.Group("/api") // No middleware here
 
@@ -33,5 +37,7 @@ func main() {
 	projectHandler.RegisterRoutes(projectGroup)
 
 	port := os.Getenv("PORT")
-	app.Listen(":" + port)
+	if err := app.Listen(":" + port); err != nil {
+		fmt.Printf("Failed to start server: %v", err)
+	}
 }

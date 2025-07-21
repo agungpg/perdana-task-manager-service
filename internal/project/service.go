@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"time"
@@ -23,7 +24,11 @@ func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, de
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if rErr := tx.Rollback(); rErr != nil && rErr != sql.ErrTxDone {
+			fmt.Printf("rollback error: %v", rErr)
+		}
+	}()
 
 	project := &Project{
 		ID:          uuid.New().String(),
