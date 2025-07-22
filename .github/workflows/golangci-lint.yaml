@@ -33,7 +33,7 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-
+          skip-restore: true 
       - name: Download and verify dependencies
         run: |
           go mod download
@@ -49,4 +49,3 @@ jobs:
         with:
           version: latest  # Use latest version that supports Go 1.24
           args: --timeout=10m
-          skip-cache: true
