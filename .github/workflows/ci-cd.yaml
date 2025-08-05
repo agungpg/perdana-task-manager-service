@@ -1,0 +1,78 @@
+name: CI/CD Go App
+
+on:
+  push:
+    branches: [develop]
+  pull_request:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    name: Lint, Build, Push, Deploy
+    runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: ${{ secrets.DOCKER_IMAGE_NAME }}
+      CONTAINER_NAME: perdana-task-manager-service
+      SSH_USER: ${{ secrets.SSH_USERNAME }}
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      DB_HOST: ${{ secrets.DATABASE_HOST }}
+      DB_PORT: ${{ secrets.DATABASE_PORT }}
+      DB_NAME: ${{ secrets.DATABASE_NAME }}
+      DB_USER: ${{ secrets.DATABASE_USERNAME }}
+      DB_PASS: ${{ secrets.DATABASE_PASS }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.24
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          config: .golangci-lint.yaml
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t ${{secrets.DOCKER_IMAGE_NAME}}:latest .
+
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{secrets.DOCKER_IMAGE_NAME}}:latest
+
+      - name: Save SSH private key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key.pem
+          chmod 600 private_key.pem
+
+      - name: Deploy on Remote Server
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $SSH_USER@$SSH_HOST <<EOF
+            echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+            docker pull $IMAGE_NAME:latest
+
+            docker rm -f $CONTAINER_NAME || true
+
+            docker run -d \
+              --name $CONTAINER_NAME \
+              -e DATABASE_HOST=$DB_HOST \
+              -e DATABASE_PORT=$DB_PORT \
+              -e DATABASE_NAME=$DB_NAME \
+              -e DATABASE_USERNAME=$DB_USER \
+              -e DATABASE_PASS=$DB_PASS \
+              -e PORT=8080 \
+              -e JWT_SECRET=$JWT_SECRET \
+              -p 8080:8080 \
+              $IMAGE_NAME:latest
+          EOF

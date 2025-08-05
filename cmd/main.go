@@ -13,7 +13,10 @@ import (
 
 func main() {
 	config.LoadEnv()
-	database.Connect()
+	if err := database.Connect(); err != nil {
+		fmt.Printf("Failed to connect to database: %v\n", err)
+		os.Exit(1)
+	}
 
 	app := fiber.New()
 
