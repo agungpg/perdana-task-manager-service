@@ -119,3 +119,49 @@ func isAlreadyMember(memberId string, members []*ProjectMembers) bool {
 	}
 	return false
 }
+
+func (s *Service) AcceptProjectInvitation(ctx context.Context, projectId, memberId string) error {
+	members, err := s.repo.GetProjectMember(ctx, projectId, memberId, nil)
+	if err != nil || len(members) == 0 {
+		return errors.New("failed to accept project invitation: member not found")
+	}
+
+	procjectMember := &ProjectMembers{}
+	found := false
+	for _, member := range members {
+		fmt.Println(member.UserID)
+		fmt.Println(member.InvitationStatus)
+		if member.UserID == memberId && member.InvitationStatus == "pending" {
+			found = true
+			procjectMember = member
+			break
+		}
+	}
+
+	if !found {
+		return errors.New("failed to accept project invitation: member not found")
+	}
+	return s.repo.AcceptProjectInvitation(ctx, procjectMember.ID)
+}
+
+func (s *Service) RemoveProjectMember(ctx context.Context, projectId, memberId, userId string) error {
+	members, err := s.repo.GetProjectMember(ctx, projectId, userId, nil)
+	if err != nil || len(members) == 0 {
+		return errors.New("failed to rempve project member: you don't have authority to do it")
+	}
+	procjectMember := &ProjectMembers{}
+	for _, member := range members {
+		if member.UserID == userId {
+			procjectMember = member
+			break
+		}
+	}
+
+	if !procjectMember.IsAdmin {
+		return errors.New("failed to rempve project member: you don't have authority to do it")
+	}
+
+	err = s.repo.RemoveProjectMember(ctx, memberId)
+
+	return err
+}

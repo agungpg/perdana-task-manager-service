@@ -11,3 +11,11 @@ type InviteProjectMemberRequest struct {
 	UserID    string `json:"user_id"`
 	IsAdmin   bool   `json:"is_admin"`
 }
+
+type AcceptMemberRequest struct {
+	ProjectID string `json:"project_id"`
+}
+type RemoveMemberRequest struct {
+	ProjectID string `json:"project_id"`
+	MemberId  string `json:"member_id"`
+}

@@ -2,6 +2,7 @@ package project
 
 import (
 	"context"
+	"time"
 
 	"github.com/agungpg/perdana-task-manager/pkg/utils"
 	"github.com/uptrace/bun"
@@ -57,6 +58,26 @@ func (r *Repository) AddProjectMember(ctx context.Context, member *ProjectMember
 	runner := utils.GetQueryRunner(tx, r.db)
 	_, err := runner.NewInsert().Model(member).Exec(ctx)
 
+	return err
+}
+
+func (r *Repository) AcceptProjectInvitation(ctx context.Context, projectMemberId string) error {
+	_, err := r.db.NewUpdate().
+		Model(&ProjectMembers{}).
+		Set("invitation_status = ?", "accepted").
+		Set("updated_at = ?", time.Now()).
+		Where("id = ?", projectMemberId).
+		Exec(ctx)
+
+	return err
+}
+
+func (r *Repository) RemoveProjectMember(ctx context.Context, member_id string) error {
+	_, err := r.db.NewUpdate().
+		Model(&ProjectMembers{}).
+		Set("is_deleted = ?", true).
+		Where("user_id = ?", member_id).
+		Exec(ctx)
 	return err
 }
 

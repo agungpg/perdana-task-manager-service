@@ -20,6 +20,8 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Get("/", h.GetProjectList)
 	router.Get("/:id", h.GetProjectByID)
 	router.Post("/invite-member", h.InviteProjectMember)
+	router.Post("/accept-invitation", h.AcceptProjectInvitation)
+	router.Post("/remove-member", h.RemoveProjectMember)
 }
 
 func (h *Handler) CreateProject(c *fiber.Ctx) error {
@@ -101,5 +103,49 @@ func (h *Handler) InviteProjectMember(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "User successfully invited!",
+	})
+}
+
+func (h *Handler) AcceptProjectInvitation(c *fiber.Ctx) error {
+	var input AcceptMemberRequest
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid input",
+		})
+	}
+
+	claims := c.Locals("userClaims").(jwt.MapClaims)
+	userID := claims["id"].(string)
+	err := h.service.AcceptProjectInvitation(c.Context(), input.ProjectID, userID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Accept Project Invitation Success!",
+	})
+}
+
+func (h *Handler) RemoveProjectMember(c *fiber.Ctx) error {
+	var input RemoveMemberRequest
+	if err := c.BodyParser(&input); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid input",
+		})
+	}
+
+	claims := c.Locals("userClaims").(jwt.MapClaims)
+	userID := claims["id"].(string)
+	err := h.service.RemoveProjectMember(c.Context(), input.ProjectID, input.MemberId, userID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Remove member Success!",
 	})
 }
