@@ -19,7 +19,9 @@ type Task struct {
 	ID            string       `bun:"id,pk,unique,notnull"`
 	ProjectID     string       `bun:"project_id,notnull"`
 	StatusID      string       `bun:"status_id,notnull"`
+	StatusName    string       `bun:"status_name,scanonly"`
 	AssigneeID    string       `bun:"assigned_to,notnull"`
+	AssigneeName  string       `bun:"assignee_name,scanonly"`
 	ReporterID    string       `bun:"reported_to,notnull"`
 	Priority      TaskPriority `bun:"priority,notnull"`
 	Name          string       `bun:"name,notnull"`

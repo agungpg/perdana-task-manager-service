@@ -1,6 +1,7 @@
 package task
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,6 +18,8 @@ func NewHandler(service *Service) *Handler {
 
 func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Post("/", h.CreateTask)
+	router.Get("/", h.GetTaskList)
+	router.Get("/:id", h.GetTaskByID)
 }
 
 func (h *Handler) CreateTask(c *fiber.Ctx) error {
@@ -62,4 +65,29 @@ func (h *Handler) CreateTask(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Task created successfully",
 	})
+}
+
+func (h *Handler) GetTaskList(c *fiber.Ctx) error {
+	projectId := c.Query("project_id")
+	fmt.Printf("projectId: %s\n", projectId)
+	tasks, err := h.service.GetTaskList(c.Context(), projectId)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": tasks,
+	})
+}
+
+func (h *Handler) GetTaskByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	task, err := h.service.GetTaskByID(c.Context(), id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(task)
 }

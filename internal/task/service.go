@@ -51,3 +51,50 @@ func (s *Service) CreateTask(ctx context.Context, projectId, statusId, assigneeI
 
 	return tx.Commit()
 }
+
+func (s *Service) GetTaskList(ctx context.Context, projectId string) ([]*TaskItem, error) {
+	tasks, err := s.repo.GetTaskList(ctx, projectId)
+	if err != nil {
+		return nil, err
+	}
+	taskItems := make([]*TaskItem, len(tasks))
+	for i, task := range tasks {
+		taskItems[i] = &TaskItem{
+			ID:           task.ID,
+			Name:         task.Name,
+			AssigneeID:   task.AssigneeID,
+			AssigneeName: task.AssigneeName,
+			StatusID:     task.StatusID,
+			StatusName:   task.StatusName,
+			DueDate:      task.DueDate.Format(time.RFC3339),
+			Thumbnail:    task.Thumbnail,
+			Priority:     string(task.Priority),
+		}
+	}
+	return taskItems, nil
+}
+func (s *Service) GetTaskByID(ctx context.Context, id string) (*TaskDetail, error) {
+	task, err := s.repo.GetTaskByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return &TaskDetail{
+		ID:           task.ID,
+		Name:         task.Name,
+		AssigneeID:   task.AssigneeID,
+		AssigneeName: task.AssigneeName,
+		StatusID:     task.StatusID,
+		StatusName:   task.StatusName,
+		DueDate:      task.DueDate,
+		Thumbnail:    task.Thumbnail,
+		Priority:     string(task.Priority),
+		Description:  task.Description,
+		CreatedAt:    task.CreatedAt,
+		CreatedBy:    task.CreatedBy,
+		UpdatedAt:    task.UpdatedAt,
+		UpdatedBy:    task.UpdatedBy,
+		ReporterID:   task.ReporterID,
+		ReporterName: task.ReporterName,
+		ProjectName:  task.ProjectName,
+	}, nil
+}
