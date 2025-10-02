@@ -24,6 +24,7 @@ type Project struct {
 	CreatedBy     string    `bun:"created_by"`
 	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 	UpdatedBy     string    `bun:"updated_by"`
+	StatusDefault string    `bun:"status_default,nullzero"`
 }
 
 type ProjectMembers struct {
@@ -37,4 +38,15 @@ type ProjectMembers struct {
 	UpdatedBy        string           `bun:"updated_by"`
 	IsAdmin          bool             `bun:"is_admin"`
 	InvitationStatus InvitationStatus `bun:"invitation_status" json:"invitation_status"`
+}
+
+type ProjectStatuses struct {
+	bun.BaseModel `bun:"table:project_statuses"`
+	ID            string    `bun:"id,pk,unique,notnull"`
+	Name          string    `bun:"name,notnull"`
+	ProjectID     string    `bun:"project_id,notnull"`
+	CreatedAt     time.Time `bun:"created_at,notnull,default:current_timestamp"`
+	CreatedBy     string    `bun:"created_by"`
+	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp"`
+	UpdatedBy     string    `bun:"updated_by"`
 }

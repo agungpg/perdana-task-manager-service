@@ -33,7 +33,7 @@ func (h *Handler) CreateProject(c *fiber.Ctx) error {
 	}
 	claims := c.Locals("userClaims").(jwt.MapClaims)
 	userID := claims["id"].(string)
-	err := h.service.CreateProject(c.Context(), userID, input.Name, input.Thumbnail, input.Description)
+	err := h.service.CreateProject(c.Context(), userID, input.Name, input.Thumbnail, input.Description, input.Statuses)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

@@ -1,9 +1,15 @@
 package project
 
 type CreateProjectRequest struct {
-	Name        string `json:"name"`
-	Thumbnail   string `json:"thumbnail,omitempty"`
-	Description string `json:"description,omitempty"`
+	Name        string                 `json:"name"`
+	Thumbnail   string                 `json:"thumbnail,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	Statuses    []ProjectStatusRequest `json:"statuses,omitempty"`
+}
+
+type ProjectStatusRequest struct {
+	Name      string `json:"name"`
+	IsDefault bool   `json:"is_default"`
 }
 
 type InviteProjectMemberRequest struct {

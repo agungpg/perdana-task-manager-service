@@ -98,3 +98,34 @@ func (r *Repository) GetProjectMember(ctx context.Context, projectId, userId str
 
 	return members, err
 }
+
+func (r *Repository) SetProjectStatusDefault(ctx context.Context, projectId, statusId string, tx *bun.Tx) error {
+	runner := utils.GetQueryRunner(tx, r.db)
+	_, err := runner.NewUpdate().
+		Model(&Project{}).
+		Set("status_default = ?", statusId).
+		Where("id = ?", projectId).
+		Exec(ctx)
+	return err
+}
+
+func (r *Repository) GetProjectStatuses(ctx context.Context, projectId string) ([]*ProjectStatuses, error) {
+	var statuses []*ProjectStatuses
+	err := r.db.NewSelect().Model(&statuses).Where("project_id = ?", projectId).Scan(ctx)
+	return statuses, err
+}
+
+func (r *Repository) AddMultipleProjectStatuses(ctx context.Context, statuses []*ProjectStatuses, tx *bun.Tx) error {
+	runner := utils.GetQueryRunner(tx, r.db)
+	_, err := runner.NewInsert().Model(&statuses).Exec(ctx)
+	return err
+}
+
+func (r *Repository) RemoveProjectStatusesByProjectId(ctx context.Context, projectId string) error {
+	_, err := r.db.NewUpdate().
+		Model(&ProjectStatuses{}).
+		Set("is_deleted = ?", true).
+		Where("project_id = ?", projectId).
+		Exec(ctx)
+	return err
+}

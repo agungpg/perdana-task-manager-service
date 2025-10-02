@@ -19,7 +19,7 @@ func NewService(repo *Repository) *Service {
 }
 
 // make thumbnail and description optional
-func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, description string) error {
+func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, description string, statuses []ProjectStatusRequest) error {
 	tx, err := s.repo.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -40,7 +40,31 @@ func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, de
 		UpdatedAt:   time.Now(),
 	}
 
+	defaultStatusId := ""
+	projectStatuses := make([]*ProjectStatuses, len(statuses))
+	for i, status := range statuses {
+		projectStatuses[i] = &ProjectStatuses{
+			ID:        uuid.New().String(),
+			Name:      status.Name,
+			ProjectID: project.ID,
+			CreatedAt: time.Now(),
+			CreatedBy: userID,
+			UpdatedAt: time.Now(),
+		}
+		if status.IsDefault {
+			defaultStatusId = projectStatuses[i].ID
+		}
+	}
+
 	err = s.repo.CreateProject(ctx, project, &tx)
+	if err != nil {
+		return err
+	}
+	err = s.repo.AddMultipleProjectStatuses(ctx, projectStatuses, &tx)
+	if err != nil {
+		return err
+	}
+	err = s.repo.SetProjectStatusDefault(ctx, project.ID, defaultStatusId, &tx)
 	if err != nil {
 		return err
 	}
