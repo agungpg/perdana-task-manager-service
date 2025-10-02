@@ -25,6 +25,7 @@ type Project struct {
 	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 	UpdatedBy     string    `bun:"updated_by"`
 	StatusDefault string    `bun:"status_default,nullzero"`
+	DoneStatusID  string    `bun:"done_status_id,nullzero"`
 }
 
 type ProjectMembers struct {

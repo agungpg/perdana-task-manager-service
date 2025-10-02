@@ -41,6 +41,7 @@ func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, de
 	}
 
 	defaultStatusId := ""
+	doneStatusId := ""
 	projectStatuses := make([]*ProjectStatuses, len(statuses))
 	for i, status := range statuses {
 		projectStatuses[i] = &ProjectStatuses{
@@ -53,6 +54,9 @@ func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, de
 		}
 		if status.IsDefault {
 			defaultStatusId = projectStatuses[i].ID
+		}
+		if status.IsDone {
+			doneStatusId = projectStatuses[i].ID
 		}
 	}
 
@@ -67,6 +71,12 @@ func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, de
 	err = s.repo.SetProjectStatusDefault(ctx, project.ID, defaultStatusId, &tx)
 	if err != nil {
 		return err
+	}
+	if doneStatusId != "" {
+		err = s.repo.SetProjectDoneStatus(ctx, project.ID, doneStatusId, &tx)
+		if err != nil {
+			return err
+		}
 	}
 	projectMember := &ProjectMembers{
 		ID:               uuid.New().String(),

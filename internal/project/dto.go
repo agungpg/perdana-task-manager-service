@@ -10,6 +10,7 @@ type CreateProjectRequest struct {
 type ProjectStatusRequest struct {
 	Name      string `json:"name"`
 	IsDefault bool   `json:"is_default"`
+	IsDone    bool   `json:"is_done"`
 }
 
 type InviteProjectMemberRequest struct {

@@ -109,6 +109,16 @@ func (r *Repository) SetProjectStatusDefault(ctx context.Context, projectId, sta
 	return err
 }
 
+func (r *Repository) SetProjectDoneStatus(ctx context.Context, projectId, statusId string, tx *bun.Tx) error {
+	runner := utils.GetQueryRunner(tx, r.db)
+	_, err := runner.NewUpdate().
+		Model(&Project{}).
+		Set("done_status_id = ?", statusId).
+		Where("id = ?", projectId).
+		Exec(ctx)
+	return err
+}
+
 func (r *Repository) GetProjectStatuses(ctx context.Context, projectId string) ([]*ProjectStatuses, error) {
 	var statuses []*ProjectStatuses
 	err := r.db.NewSelect().Model(&statuses).Where("project_id = ?", projectId).Scan(ctx)
