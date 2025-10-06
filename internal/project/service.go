@@ -45,12 +45,13 @@ func (s *Service) CreateProject(ctx context.Context, userID, name, thumbnail, de
 	projectStatuses := make([]*ProjectStatuses, len(statuses))
 	for i, status := range statuses {
 		projectStatuses[i] = &ProjectStatuses{
-			ID:        uuid.New().String(),
-			Name:      status.Name,
-			ProjectID: project.ID,
-			CreatedAt: time.Now(),
-			CreatedBy: userID,
-			UpdatedAt: time.Now(),
+			ID:         uuid.New().String(),
+			Name:       status.Name,
+			ProjectID:  project.ID,
+			CreatedAt:  time.Now(),
+			CreatedBy:  userID,
+			UpdatedAt:  time.Now(),
+			OrderIndex: status.OrderIndex,
 		}
 		if status.IsDefault {
 			defaultStatusId = projectStatuses[i].ID

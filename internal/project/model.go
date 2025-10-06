@@ -50,4 +50,5 @@ type ProjectStatuses struct {
 	CreatedBy     string    `bun:"created_by"`
 	UpdatedAt     time.Time `bun:"updated_at,notnull,default:current_timestamp"`
 	UpdatedBy     string    `bun:"updated_by"`
+	OrderIndex    int       `bun:"order_index,notnull"`
 }
