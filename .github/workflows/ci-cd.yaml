@@ -75,5 +75,14 @@ jobs:
               -e JWT_SECRET=$JWT_SECRET \
               -p 8080:8080 \
               $IMAGE_NAME:latest
+              
+            echo "🗄️ Running DB migration..."
+            sleep 5
+            docker exec -e DATABASE_HOST=$DB_HOST \
+                        -e DATABASE_PORT=$DB_PORT \
+                        -e DATABASE_NAME=$DB_NAME \
+                        -e DATABASE_USERNAME=$DB_USER \
+                        -e DATABASE_PASS=$DB_PASS \
+                        $CONTAINER_NAME ./main migrate up || echo "⚠️ Migration failed or already up to date"
           EOF
 
