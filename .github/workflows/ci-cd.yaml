@@ -57,7 +57,7 @@ jobs:
 
       - name: Deploy on Remote Server
         run: |
-          ssh -p 2807 -o StrictHostKeyChecking=no -i private_key.pem $SSH_USER@$SSH_HOST <<'EOF'
+          ssh -p 2807 -o StrictHostKeyChecking=no -i private_key.pem $SSH_USER@$SSH_HOST <<EOF
             echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
             docker pull $IMAGE_NAME:latest
@@ -76,3 +76,4 @@ jobs:
               -p 8080:8080 \
               $IMAGE_NAME:latest
           EOF
+
