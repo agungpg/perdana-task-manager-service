@@ -35,6 +35,9 @@ WORKDIR /app
 # Copy the binary from builder stage
 COPY --from=builder /app/main .
 
+#copy migration files
+COPY --from=builder /app/migrations ./migrations
+
 # Change ownership to non-root user
 RUN chown -R appuser:appgroup /app
 

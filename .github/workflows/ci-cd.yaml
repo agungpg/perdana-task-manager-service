@@ -57,7 +57,7 @@ jobs:
 
       - name: Deploy on Remote Server
         run: |
-          ssh -o StrictHostKeyChecking=no -i private_key.pem $SSH_USER@$SSH_HOST <<EOF
+          ssh -p 2807 -o StrictHostKeyChecking=no -i private_key.pem $SSH_USER@$SSH_HOST <<EOF
             echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
             docker pull $IMAGE_NAME:latest
@@ -75,4 +75,14 @@ jobs:
               -e JWT_SECRET=$JWT_SECRET \
               -p 8080:8080 \
               $IMAGE_NAME:latest
+              
+            echo "🗄️ Running DB migration..."
+            sleep 5
+            docker exec -e DATABASE_HOST=$DB_HOST \
+                        -e DATABASE_PORT=$DB_PORT \
+                        -e DATABASE_NAME=$DB_NAME \
+                        -e DATABASE_USERNAME=$DB_USER \
+                        -e DATABASE_PASS=$DB_PASS \
+                        $CONTAINER_NAME ./main migrate up || echo "⚠️ Migration failed or already up to date"
           EOF
+
