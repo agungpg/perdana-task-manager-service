@@ -49,6 +49,11 @@ func (c *Config) buildDSN() string {
 		c.Username, c.Password, c.Host, c.Port, c.Name, c.SSLMode)
 }
 
+// DSN exposes the configured connection string.
+func (c *Config) DSN() string {
+	return c.buildDSN()
+}
+
 // Connect establishes a connection to the PostgreSQL database
 func Connect() error {
 	return ConnectWithConfig(NewConfig())

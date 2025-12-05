@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/agungpg/perdana-task-manager/config"
@@ -14,6 +15,22 @@ import (
 
 func main() {
 	config.LoadEnv()
+
+	// Run migrations when invoked with: ./main migrate [up|down]
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+		direction := "up"
+		if len(os.Args) > 2 {
+			direction = os.Args[2]
+		}
+
+		if err := database.RunMigrations(direction); err != nil {
+			log.Fatalf("Migration %s failed: %v", direction, err)
+		}
+
+		fmt.Printf("Migration %s completed successfully\n", direction)
+		return
+	}
+
 	if err := database.Connect(); err != nil {
 		fmt.Printf("Failed to connect to database: %v\n", err)
 		os.Exit(1)
@@ -47,6 +64,9 @@ func main() {
 	taskHandler.RegisterRoutes(taskGroup)
 
 	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
 	if err := app.Listen(":" + port); err != nil {
 		fmt.Printf("Failed to start server: %v", err)
 	}
