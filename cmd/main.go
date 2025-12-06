@@ -9,6 +9,7 @@ import (
 	"github.com/agungpg/perdana-task-manager/internal/auth"
 	"github.com/agungpg/perdana-task-manager/internal/project"
 	"github.com/agungpg/perdana-task-manager/internal/task"
+	usersettings "github.com/agungpg/perdana-task-manager/internal/user_settings"
 	"github.com/agungpg/perdana-task-manager/pkg/database"
 	"github.com/gofiber/fiber/v2"
 )
@@ -42,7 +43,6 @@ func main() {
 	authRepo := auth.NewRepository(database.DB)
 	authService := auth.NewService(authRepo)
 	authHandler := auth.NewHandler(authService)
-
 	// Create auth group and pass it to RegisterRoutes
 	authGroup := app.Group("/auth")
 	authHandler.RegisterRoutes(authGroup)
@@ -62,6 +62,12 @@ func main() {
 	taskHandler := task.NewHandler(taskService)
 	taskGroup := api.Group("/task", auth.JWTMiddleware())
 	taskHandler.RegisterRoutes(taskGroup)
+
+	userSettingsRepo := usersettings.NewRepository(database.DB)
+	userSettingsService := usersettings.NewService(userSettingsRepo)
+	userSettingsHandler := usersettings.NewHandler(userSettingsService)
+	userSettingsGroup := api.Group("/user-settings", auth.JWTMiddleware())
+	userSettingsHandler.RegisterRoutes(userSettingsGroup)
 
 	port := os.Getenv("PORT")
 	if port == "" {
