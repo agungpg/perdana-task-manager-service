@@ -200,3 +200,33 @@ func (s *Service) RemoveProjectMember(ctx context.Context, projectId, memberId, 
 
 	return err
 }
+
+func (s *Service) GetProjectSummaries(ctx context.Context, userId string) ([]ProjectSummary, error) {
+	rows, err := s.repo.GetProjectStatusCounts(ctx, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	byProject := make(map[string]*ProjectSummary)
+	order := []string{}
+
+	for _, r := range rows {
+		ps, ok := byProject[r.ProjectID]
+		if !ok {
+			ps = &ProjectSummary{
+				ProjectID:   r.ProjectID,
+				ProjectName: r.ProjectName,
+				Statuses:    map[string]int{},
+			}
+			byProject[r.ProjectID] = ps
+			order = append(order, r.ProjectID)
+		}
+		ps.Statuses[r.StatusName] = r.TaskCount
+	}
+
+	summaries := make([]ProjectSummary, 0, len(order))
+	for _, id := range order {
+		summaries = append(summaries, *byProject[id])
+	}
+	return summaries, nil
+}

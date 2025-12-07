@@ -27,3 +27,9 @@ type RemoveMemberRequest struct {
 	ProjectID string `json:"project_id"`
 	MemberId  string `json:"member_id"`
 }
+
+type ProjectSummary struct {
+	ProjectID   string         `json:"project_id"`
+	ProjectName string         `json:"project_name"`
+	Statuses    map[string]int `json:"statuses"` // key = status name, value = count
+}

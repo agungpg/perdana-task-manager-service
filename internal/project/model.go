@@ -52,3 +52,10 @@ type ProjectStatuses struct {
 	UpdatedBy     string    `bun:"updated_by"`
 	OrderIndex    int       `bun:"order_index,notnull"`
 }
+
+type ProjectStatusCountRow struct {
+	ProjectID   string `bun:"project_id"`
+	ProjectName string `bun:"project_name"`
+	StatusName  string `bun:"status_name"`
+	TaskCount   int    `bun:"task_count"`
+}

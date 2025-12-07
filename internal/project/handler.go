@@ -18,6 +18,7 @@ func NewHandler(service *Service) *Handler {
 func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Post("/", h.CreateProject)
 	router.Get("/", h.GetProjectList)
+	router.Get("/summaries", h.GetProjectSummaries)
 	router.Get("/:id", h.GetProjectByID)
 	router.Post("/invite-member", h.InviteProjectMember)
 	router.Post("/accept-invitation", h.AcceptProjectInvitation)
@@ -148,4 +149,20 @@ func (h *Handler) RemoveProjectMember(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Remove member Success!",
 	})
+}
+
+func (h *Handler) GetProjectSummaries(c *fiber.Ctx) error {
+
+	claims := c.Locals("userClaims").(jwt.MapClaims)
+	userID := claims["id"].(string)
+
+	summaries, err := h.service.GetProjectSummaries(c.Context(), userID)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(summaries)
 }

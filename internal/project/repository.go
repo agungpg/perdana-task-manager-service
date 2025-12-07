@@ -139,3 +139,24 @@ func (r *Repository) RemoveProjectStatusesByProjectId(ctx context.Context, proje
 		Exec(ctx)
 	return err
 }
+
+func (r *Repository) GetProjectStatusCounts(ctx context.Context, userId string) ([]ProjectStatusCountRow, error) {
+	var rows []ProjectStatusCountRow
+
+	err := r.db.NewSelect().
+		TableExpr("projects AS p").
+		ColumnExpr("p.id as project_id").
+		ColumnExpr("p.name AS project_name").
+		ColumnExpr("ps.name AS status_name").
+		ColumnExpr("COALESCE(COUNT(t.id), 0) as task_count").
+		Join("LEFT JOIN project_statuses AS ps ON ps.project_id = p.id").
+		Join("LEFT JOIN tasks AS t ON t.status_id = ps.id AND t.is_deleted = FALSE").
+		Join("LEFT JOIN project_members AS pm ON pm.project_id = p.id").
+		Where("pm.user_id = ?", userId).
+		Where("p.is_deleted = FALSE").
+		Group("p.id", "ps.id").
+		Order("p.created_at").
+		Scan(ctx, &rows)
+
+	return rows, err
+}
