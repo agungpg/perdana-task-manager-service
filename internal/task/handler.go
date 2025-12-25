@@ -69,8 +69,11 @@ func (h *Handler) CreateTask(c *fiber.Ctx) error {
 
 func (h *Handler) GetTaskList(c *fiber.Ctx) error {
 	projectId := c.Query("project_id")
+	name := c.Query("name")
+	statusId := c.Query("statusId")
+
 	fmt.Printf("projectId: %s\n", projectId)
-	tasks, err := h.service.GetTaskList(c.Context(), projectId)
+	tasks, err := h.service.GetTaskList(c.Context(), projectId, name, statusId)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

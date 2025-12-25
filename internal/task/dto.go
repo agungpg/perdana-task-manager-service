@@ -13,15 +13,20 @@ type CreateTaskRequest struct {
 }
 
 type TaskItem struct {
-	ID           string `json:"id"`
-	Name         string `json:"name"`
-	AssigneeID   string `json:"assignee_id"`
-	AssigneeName string `json:"assignee_name"`
-	StatusID     string `json:"status_id"`
-	StatusName   string `json:"status_name"`
-	DueDate      string `json:"due_date"`
-	Thumbnail    string `json:"thumbnail"`
-	Priority     string `json:"priority"`
+	ID                    string `json:"id"`
+	Name                  string `json:"name"`
+	AssigneeID            string `json:"assigneeId"`
+	AssigneeName          string `json:"assigneeName"`
+	StatusID              string `json:"statusId"`
+	StatusName            string `json:"statusName"`
+	DueDate               string `json:"dueDate"`
+	RemainingTime         string `json:"remainingTime"`
+	Thumbnail             string `json:"thumbnail"`
+	Priority              string `json:"priority"`
+	ProjectId             string `json:"projectId"`
+	ProjectName           string `json:"projectName"`
+	TotalSubTask          int    `json:"totalSubtasks"`
+	TotalCompletedSubTask int    `json:"completedSubtasks"`
 }
 
 type TaskDetail struct {

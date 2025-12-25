@@ -52,23 +52,40 @@ func (s *Service) CreateTask(ctx context.Context, projectId, statusId, assigneeI
 	return tx.Commit()
 }
 
-func (s *Service) GetTaskList(ctx context.Context, projectId string) ([]*TaskItem, error) {
-	tasks, err := s.repo.GetTaskList(ctx, projectId)
+func (s *Service) GetTaskList(ctx context.Context, projectId, name, statusId string) ([]*TaskItem, error) {
+	tasks, err := s.repo.GetTaskList(ctx, projectId, name, statusId)
 	if err != nil {
 		return nil, err
 	}
+
 	taskItems := make([]*TaskItem, len(tasks))
 	for i, task := range tasks {
+		remainingTime := time.Since(task.DueDate)
+		remHours := remainingTime.Hours()
+		days := remHours / 24
+		hours := float64(int(remHours) % 24)
+		remainingTimeStr := ""
+		if days > 0 {
+			remainingTimeStr = remainingTimeStr + fmt.Sprintf("%.0f", days) + "days"
+		}
+		if hours > 0 {
+			remainingTimeStr = remainingTimeStr + " " + fmt.Sprintf("%.0f", hours) + "hours"
+		}
+
 		taskItems[i] = &TaskItem{
-			ID:           task.ID,
-			Name:         task.Name,
-			AssigneeID:   task.AssigneeID,
-			AssigneeName: task.AssigneeName,
-			StatusID:     task.StatusID,
-			StatusName:   task.StatusName,
-			DueDate:      task.DueDate.Format(time.RFC3339),
-			Thumbnail:    task.Thumbnail,
-			Priority:     string(task.Priority),
+			ID:                    task.ID,
+			Name:                  task.Name,
+			AssigneeID:            task.AssigneeID,
+			AssigneeName:          task.AssigneeName,
+			StatusID:              task.StatusID,
+			StatusName:            task.StatusName,
+			DueDate:               task.DueDate.Format(time.RFC3339),
+			RemainingTime:         remainingTimeStr,
+			Thumbnail:             task.Thumbnail,
+			Priority:              string(task.Priority),
+			ProjectName:           string(task.ProjectName),
+			TotalSubTask:          int(task.TotalSubTask),
+			TotalCompletedSubTask: int(task.TotalCompletedSubTask),
 		}
 	}
 	return taskItems, nil

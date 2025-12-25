@@ -43,17 +43,32 @@ func (r *Repository) GetTaskByID(ctx context.Context, id string) (*TaskDetail, e
 	return &task, err
 }
 
-func (r *Repository) GetTaskList(ctx context.Context, projectId string) ([]*Task, error) {
+func (r *Repository) GetTaskList(ctx context.Context, projectId, name, statusId string) ([]*Task, error) {
 	var tasks []*Task
-	err := r.db.NewSelect().Model(&tasks).
+	query := r.db.NewSelect().Model(&tasks).
 		Column("task.id", "task.name", "task.assigned_to", "task.status_id", "task.due_date", "task.thumbnail", "task.priority").
+		ColumnExpr("p.name AS project_name").
 		ColumnExpr("ps.name AS status_name").
 		ColumnExpr("u.username AS assignee_name").
+		ColumnExpr("count(st.id) AS total_subtask").
+		ColumnExpr("count(st.id) FILTER(WHERE st.is_completed = ?) AS total_completed_subtask", true).
+		Join("LEFT JOIN projects AS p ON p.id = task.project_id").
 		Join("LEFT JOIN project_statuses AS ps ON ps.id = task.status_id").
 		Join("LEFT JOIN project_members AS pm ON pm.id = task.assigned_to").
+		Join("LEFT JOIN sub_tasks AS st ON st.task_id = task.id").
 		Join("LEFT JOIN users AS u ON u.id = pm.user_id").
-		Where("task.project_id = ?", projectId).
-		Where("task.is_deleted = ?", false).
-		Scan(ctx)
+		Where("task.is_deleted = ?", false)
+
+	if projectId != "" {
+		query = query.Where("task.project_id = ?", projectId)
+	}
+	if name != "" {
+		query = query.Where("task.name = ?", name)
+	}
+	if statusId != "" {
+		query = query.Where("task.status_id = ?", statusId)
+	}
+	err := query.Group("task.id", "p.id", "ps.id", "u.id").Scan(ctx)
+
 	return tasks, err
 }
