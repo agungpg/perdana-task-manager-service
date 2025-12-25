@@ -23,6 +23,7 @@ func (h *Handler) RegisterRoutes(router fiber.Router) {
 	router.Post("/invite-member", h.InviteProjectMember)
 	router.Post("/accept-invitation", h.AcceptProjectInvitation)
 	router.Post("/remove-member", h.RemoveProjectMember)
+	router.Get("/:id/statuses", h.GetProjectStatuses)
 }
 
 func (h *Handler) CreateProject(c *fiber.Ctx) error {
@@ -165,4 +166,18 @@ func (h *Handler) GetProjectSummaries(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(summaries)
+}
+
+func (h *Handler) GetProjectStatuses(c *fiber.Ctx) error {
+	projectId := c.Params("id")
+
+	statuses, err := h.service.GetProjectStatuses(c.Context(), projectId)
+
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+
+	return c.JSON(statuses)
 }

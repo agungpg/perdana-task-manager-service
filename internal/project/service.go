@@ -230,3 +230,11 @@ func (s *Service) GetProjectSummaries(ctx context.Context, userId string) ([]Pro
 	}
 	return summaries, nil
 }
+
+func (s *Service) GetProjectStatuses(ctx context.Context, projectId string) ([]ProjectStatuses, error) {
+	rows, err := s.repo.GetProjectStatuses(ctx, projectId)
+	if err != nil {
+		return nil, err
+	}
+	return rows, nil
+}

@@ -119,8 +119,8 @@ func (r *Repository) SetProjectDoneStatus(ctx context.Context, projectId, status
 	return err
 }
 
-func (r *Repository) GetProjectStatuses(ctx context.Context, projectId string) ([]*ProjectStatuses, error) {
-	var statuses []*ProjectStatuses
+func (r *Repository) GetProjectStatuses(ctx context.Context, projectId string) ([]ProjectStatuses, error) {
+	var statuses []ProjectStatuses
 	err := r.db.NewSelect().Model(&statuses).Where("project_id = ?", projectId).Scan(ctx)
 	return statuses, err
 }
